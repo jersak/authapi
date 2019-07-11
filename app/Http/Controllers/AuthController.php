@@ -11,6 +11,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class AuthController extends Controller
 {
+    // Ideally this should be in a configuration file.
+    const TOKEN_ISSUER            = 'authApi';
+    const TOKEN_VALID_FOR_SECONDS = 86400;
 
     public function authenticate(Request $request)
     {
@@ -54,10 +57,10 @@ class AuthController extends Controller
     protected function createJwtToken(User $user)
     {
         $payload = [
-            'iss' => "lumen-jwt", // Issuer of the token
-            'sub' => $user->id, // Subject of the token
-            'iat' => time(), // Time when JWT was issued.
-            'exp' => time() + 60 * 60, // Expiration time
+            'issuer'     => self::TOKEN_ISSUER,
+            'subject'    => $user->id,
+            'issued_at'  => time(),
+            'expires_at' => time() + self::TOKEN_VALID_FOR_SECONDS,
         ];
 
         // As you can see we are passing `JWT_SECRET` as the second parameter that will

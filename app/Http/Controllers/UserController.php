@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
-use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -29,9 +29,9 @@ class UserController extends Controller
             throw new UnprocessableEntityHttpException($messages);
         }
 
-        $user = new User($request->all());
+        $user           = new User($request->all());
         $user->password = Hash::make($request->password);
-        $user->token = str_random(32);
+        $user->token    = str_random(32);
 
         try {
             $user->save();

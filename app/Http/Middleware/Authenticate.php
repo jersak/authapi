@@ -2,29 +2,14 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
+use Firebase\JWT\JWT;
 use Illuminate\Contracts\Auth\Factory as Auth;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class Authenticate
 {
-    /**
-     * The authentication guard factory instance.
-     *
-     * @var \Illuminate\Contracts\Auth\Factory
-     */
-    protected $auth;
-
-    /**
-     * Create a new middleware instance.
-     *
-     * @param  \Illuminate\Contracts\Auth\Factory  $auth
-     * @return void
-     */
-    public function __construct(Auth $auth)
-    {
-        $this->auth = $auth;
-    }
-
     /**
      * Handle an incoming request.
      *
@@ -35,9 +20,21 @@ class Authenticate
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        if ($this->auth->guard($guard)->guest()) {
-            return response('Unauthorized.', 401);
+        $token = $request->bearerToken();
+
+        if (!$token) {
+            throw new UnauthorizedHttpException('Challenge', json_encode('Missing authentication token.'));
         }
+
+        try {
+            $credentials = JWT::decode($token, env('JWT_SECRET'), ['HS256']);
+        } catch (\Throwable $th) {
+            throw new UnauthorizedHttpException('Challenge', json_encode('Token is expired.'));
+        }
+
+        $user = User::find($credentials->subject);
+
+        $request->auth = $user;
 
         return $next($request);
     }
