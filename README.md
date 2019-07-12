@@ -20,6 +20,7 @@ At this point the application should be accessible at  [http://localhost:8080/](
 ## Endpoints (assuming http://localhost:8080 as base url)
 ### Create a new user
 POST - http://localhost:8080/users
+
 Request payload (JSON):
 
     {
@@ -27,6 +28,7 @@ Request payload (JSON):
 		"email": "john@email.com",
 		"password": "mysuperpass"
 	}
+
 Response payload (JSON):
 
     {
@@ -39,12 +41,14 @@ Response payload (JSON):
     
 ### Authenticate a user
 POST - http://localhost:8080/auth/login
+
 Request payload (JSON):
 
     {
 		"email": "john@email.com",
 		"password": "mysuperpass"
 	}
+
 Response payload (JSON):
 
     {
