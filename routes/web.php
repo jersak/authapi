@@ -23,12 +23,6 @@ $router->group(['prefix' => 'auth'], function () use ($router) {
     $router->post('/login', 'AuthController@authenticate');
 });
 
-$router->group(
-    ['middleware' => 'auth'],
-    function () use ($router) {
-        $router->get('users', function () {
-            $users = \App\Models\User::all();
-            return response()->json($users);
-        });
-    }
-);
+$router->group(['middleware' => 'auth'], function () use ($router) {
+    $router->get('/whoami', 'WhoAmIController@index');
+});

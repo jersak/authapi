@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\User;
 use Closure;
 use Firebase\JWT\JWT;
-use Illuminate\Contracts\Auth\Factory as Auth;
+use Illuminate\Support\Facades\Crypt;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class Authenticate
@@ -26,14 +26,16 @@ class Authenticate
             throw new UnauthorizedHttpException('Challenge', json_encode('Missing authentication token.'));
         }
 
+        $token = Crypt::decrypt($token);
+
         try {
             $credentials = JWT::decode($token, env('JWT_SECRET'), ['HS256']);
-        } catch (\Throwable $th) {
-            throw new UnauthorizedHttpException('Challenge', json_encode('Token is expired.'));
+        } catch (\Exception $e) {
+            throw new UnauthorizedHttpException('Challenge', json_encode($e->getMessage()));
         }
 
-        $user = User::find($credentials->subject);
-
+        // After authentication, include the user object in the request so it can be easily accessed by other parts of the app
+        $user          = User::find($credentials->sub);
         $request->auth = $user;
 
         return $next($request);

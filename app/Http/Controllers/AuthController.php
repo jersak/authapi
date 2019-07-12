@@ -5,16 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class AuthController extends Controller
 {
-    // Ideally this should be in a configuration file.
-    const TOKEN_ISSUER            = 'authApi';
-    const TOKEN_VALID_FOR_SECONDS = 86400;
-
     public function authenticate(Request $request)
     {
         $validator = Validator::make(
@@ -51,20 +49,22 @@ class AuthController extends Controller
     /**
      * Create a new token.
      *
-     * @param  User   $user
+     * @param  User $user
      * @return string
      */
-    protected function createJwtToken(User $user)
+    private function createJwtToken(User $user)
     {
         $payload = [
-            'issuer'     => self::TOKEN_ISSUER,
-            'subject'    => $user->id,
-            'issued_at'  => time(),
-            'expires_at' => time() + self::TOKEN_VALID_FOR_SECONDS,
+            'iss' => env('JWT_ISSUER'),
+            'sub' => $user->id,
+            'iat' => time(),
+            'exp' => time() + env('JWT_EXPIRE'),
         ];
 
-        // As you can see we are passing `JWT_SECRET` as the second parameter that will
-        // be used to decode the token in the future.
-        return JWT::encode($payload, env('JWT_SECRET'));
+        $token = JWT::encode($payload, env('JWT_SECRET'));
+
+        $token = Crypt::encrypt($token);
+
+        return $token;
     }
 }
