@@ -26,7 +26,11 @@ class Authenticate
             throw new UnauthorizedHttpException('Challenge', json_encode('Missing authentication token.'));
         }
 
-        $token = Crypt::decrypt($token);
+        try {
+            $token = Crypt::decrypt($token);
+        } catch (\Exception $e) {
+            throw new UnauthorizedHttpException('Challenge', json_encode('Token is malformed or corrupted.'));
+        }
 
         try {
             $credentials = JWT::decode($token, env('JWT_SECRET'), ['HS256']);
